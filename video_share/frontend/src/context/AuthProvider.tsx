@@ -27,12 +27,19 @@ interface AuthContextValue {
   token: Token | null;
   user: User;
   loginUser: (username: string, password: string) => void;
+  logoutUser: () => void;
 }
 
 const AuthContext = createContext<AuthContextValue | null>(null);
 export function AuthProvider(props: AuthProviderProps): JSX.Element {
-  const [token, setToken] = useState<Token | null>(null);
-  const [user, setUser] = useState<User | null>(null);
+  const [token, setToken] = useState<Token | null>(() => {
+    const maybeToken = localStorage.getItem("token");
+    return maybeToken ? JSON.parse(maybeToken) : null;
+  });
+  const [user, setUser] = useState<User | null>(() => {
+    const maybeUser = localStorage.getItem("user");
+    return maybeUser ? JSON.parse(maybeUser) : null;
+  });
 
   const loginUser = async (username: string, password: string) => {
     try {
@@ -48,14 +55,23 @@ export function AuthProvider(props: AuthProviderProps): JSX.Element {
       });
       const data: Token = await response.json();
       setToken(data);
+      localStorage.setItem("token", JSON.stringify(data));
       setUser(jwt_decode(data.access));
+      localStorage.setItem("user", JSON.stringify(jwt_decode(data.access)));
     } catch (e) {
       throw new Error(e);
     }
   };
 
+  const logoutUser = () => {
+    setToken(null);
+    setUser(null);
+    localStorage.removeItem("token");
+    localStorage.removeItem("user");
+  };
+
   return (
-    <AuthContext.Provider value={{ token, user, loginUser }}>
+    <AuthContext.Provider value={{ token, user, loginUser, logoutUser }}>
       {props.children}
     </AuthContext.Provider>
   );

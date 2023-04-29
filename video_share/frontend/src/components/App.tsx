@@ -6,17 +6,25 @@ import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import { LoginPage } from "../pages/LoginPage";
 import { AuthProvider } from "../context/AuthProvider";
 import { HomePage } from "../pages/HomePage";
+import { ProtectedRoute } from "../pages/ProtectedRoute";
 
 const router = createBrowserRouter([
   {
-    path: "",
+    // path: "",
     element: (
       <AuthProvider>
         <Root />
       </AuthProvider>
     ),
     children: [
-      { path: "", element: <HomePage /> },
+      {
+        path: "",
+        element: (
+          <ProtectedRoute>
+            <HomePage />
+          </ProtectedRoute>
+        ),
+      },
       {
         path: "/login",
         element: <LoginPage />,
