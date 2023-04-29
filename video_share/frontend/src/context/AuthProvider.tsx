@@ -1,6 +1,7 @@
 import * as React from "react";
 import { useState, createContext, useContext } from "react";
 import jwt_decode from "jwt-decode";
+import { useLocation, useNavigate } from "react-router";
 
 interface AuthProviderProps {
   children: React.ReactNode;
@@ -36,10 +37,14 @@ export function AuthProvider(props: AuthProviderProps): JSX.Element {
     const maybeToken = localStorage.getItem("token");
     return maybeToken ? JSON.parse(maybeToken) : null;
   });
+
   const [user, setUser] = useState<User | null>(() => {
     const maybeUser = localStorage.getItem("user");
     return maybeUser ? JSON.parse(maybeUser) : null;
   });
+
+  const location = useLocation();
+  const navigate = useNavigate();
 
   const loginUser = async (username: string, password: string) => {
     try {
@@ -58,6 +63,7 @@ export function AuthProvider(props: AuthProviderProps): JSX.Element {
       localStorage.setItem("token", JSON.stringify(data));
       setUser(jwt_decode(data.access));
       localStorage.setItem("user", JSON.stringify(jwt_decode(data.access)));
+      navigate(location.state.redirectedFrom ?? "/");
     } catch (e) {
       throw new Error(e);
     }

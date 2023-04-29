@@ -7,6 +7,7 @@ import { LoginPage } from "../pages/LoginPage";
 import { AuthProvider } from "../context/AuthProvider";
 import { HomePage } from "../pages/HomePage";
 import { ProtectedRoute } from "../pages/ProtectedRoute";
+import { Dashboard } from "../pages/Dashboard";
 
 const router = createBrowserRouter([
   {
@@ -28,6 +29,14 @@ const router = createBrowserRouter([
       {
         path: "/login",
         element: <LoginPage />,
+      },
+      {
+        path: "/dashboard",
+        element: (
+          <ProtectedRoute>
+            <Dashboard />
+          </ProtectedRoute>
+        ),
       },
     ],
   },
