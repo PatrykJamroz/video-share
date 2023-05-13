@@ -9,6 +9,7 @@ interface Props {
 export function ProtectedRoute(props: Props): JSX.Element {
   const authContext = useAuthContext();
   const location = useLocation();
+
   if (!authContext.user) {
     return (
       <Navigate
@@ -18,5 +19,6 @@ export function ProtectedRoute(props: Props): JSX.Element {
       />
     );
   }
+  //TODO probably outlet not required, redirect does not work
   return props.children ? props.children : <Outlet />;
 }

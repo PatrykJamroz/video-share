@@ -34,6 +34,10 @@ interface AuthContextValue {
 const AuthContext = createContext<AuthContextValue | null>(null);
 export function AuthProvider(props: AuthProviderProps): JSX.Element {
   const [loading, setLoading] = useState<boolean>(true);
+  const [loginErrors, setLoginErrors] = useState({
+    username: "",
+    password: "",
+  });
 
   const [token, setToken] = useState<Token | null>(() => {
     setLoading(false);
@@ -62,13 +66,17 @@ export function AuthProvider(props: AuthProviderProps): JSX.Element {
         }),
       });
       //TODO FIX token set as error data, eg. incorrect login details
-      const data: Token = await response.json();
-      setToken(data);
-      localStorage.setItem("token", JSON.stringify(data));
-      setUser(jwt_decode(data.access));
-      localStorage.setItem("user", JSON.stringify(jwt_decode(data.access)));
-      navigate(location.state.redirectedFrom ?? "/");
+      if (response.ok) {
+        const data: Token = await response.json();
+        setToken(data);
+        localStorage.setItem("token", JSON.stringify(data));
+        setUser(jwt_decode(data.access));
+        localStorage.setItem("user", JSON.stringify(jwt_decode(data.access)));
+        navigate(location.pathname ?? "/");
+      }
+      console.log({ response });
     } catch (e) {
+      console.log({ e });
       throw new Error(e);
     }
   };
