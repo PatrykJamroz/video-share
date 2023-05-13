@@ -6,25 +6,22 @@ import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import { LoginPage } from "../pages/LoginPage";
 import { AuthProvider } from "../context/AuthProvider";
 import { HomePage } from "../pages/HomePage";
-import { ProtectedRoute } from "../pages/ProtectedRoute";
 import { Dashboard } from "../pages/Dashboard";
+import { ChakraProvider } from "@chakra-ui/react";
 
 const router = createBrowserRouter([
   {
-    // path: "",
     element: (
-      <AuthProvider>
-        <Root />
-      </AuthProvider>
+      <ChakraProvider>
+        <AuthProvider>
+          <Root />
+        </AuthProvider>
+      </ChakraProvider>
     ),
     children: [
       {
         path: "",
-        element: (
-          <ProtectedRoute>
-            <HomePage />
-          </ProtectedRoute>
-        ),
+        element: <HomePage />,
       },
       {
         path: "/login",
@@ -32,11 +29,7 @@ const router = createBrowserRouter([
       },
       {
         path: "/dashboard",
-        element: (
-          <ProtectedRoute>
-            <Dashboard />
-          </ProtectedRoute>
-        ),
+        element: <Dashboard />,
       },
     ],
   },
