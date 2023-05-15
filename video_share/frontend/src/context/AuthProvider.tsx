@@ -29,15 +29,21 @@ interface AuthContextValue {
   user: User;
   loginUser: (username: string, password: string) => void;
   logoutUser: () => void;
+  loginErrors: LoginErrors;
+  setLoginErrors: React.Dispatch<React.SetStateAction<LoginErrors>>;
+  loading: boolean;
+}
+
+interface LoginErrors {
+  detail?: string;
+  username?: string[];
+  password?: string[];
 }
 
 const AuthContext = createContext<AuthContextValue | null>(null);
 export function AuthProvider(props: AuthProviderProps): JSX.Element {
   const [loading, setLoading] = useState<boolean>(true);
-  const [loginErrors, setLoginErrors] = useState({
-    username: "",
-    password: "",
-  });
+  const [loginErrors, setLoginErrors] = useState<LoginErrors>({});
 
   const [token, setToken] = useState<Token | null>(() => {
     setLoading(false);
@@ -54,8 +60,10 @@ export function AuthProvider(props: AuthProviderProps): JSX.Element {
   const navigate = useNavigate();
 
   const loginUser = async (username: string, password: string) => {
+    let response: Response;
+    setLoading(true);
     try {
-      const response = await fetch("http://127.0.0.1:8000/api/token/", {
+      response = await fetch("http://127.0.0.1:8000/api/token/", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -65,20 +73,23 @@ export function AuthProvider(props: AuthProviderProps): JSX.Element {
           password,
         }),
       });
-      //TODO FIX token set as error data, eg. incorrect login details
-      if (response.ok) {
-        const data: Token = await response.json();
-        setToken(data);
-        localStorage.setItem("token", JSON.stringify(data));
-        setUser(jwt_decode(data.access));
-        localStorage.setItem("user", JSON.stringify(jwt_decode(data.access)));
-        navigate(location.pathname ?? "/");
-      }
-      console.log({ response });
     } catch (e) {
-      console.log({ e });
+      console.info(e);
       throw new Error(e);
     }
+    setLoading(false);
+    if (!response.ok) {
+      const errorResponse: LoginErrors = await response.json();
+      setLoginErrors(errorResponse);
+      return;
+    }
+
+    const data: Token = await response.json();
+    setToken(data);
+    localStorage.setItem("token", JSON.stringify(data));
+    setUser(jwt_decode(data.access));
+    localStorage.setItem("user", JSON.stringify(jwt_decode(data.access)));
+    navigate(location.pathname ?? "/");
   };
 
   const logoutUser = () => {
@@ -127,7 +138,17 @@ export function AuthProvider(props: AuthProviderProps): JSX.Element {
   }, [token, loading]);
 
   return (
-    <AuthContext.Provider value={{ token, user, loginUser, logoutUser }}>
+    <AuthContext.Provider
+      value={{
+        token,
+        user,
+        loginUser,
+        logoutUser,
+        loginErrors,
+        setLoginErrors,
+        loading,
+      }}
+    >
       {props.children}
     </AuthContext.Provider>
   );
