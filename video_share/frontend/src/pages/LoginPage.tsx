@@ -1,6 +1,6 @@
 import * as React from "react";
 import { useAuthContext } from "../context/AuthProvider";
-import { Navigate, useLocation } from "react-router";
+import { Navigate } from "react-router";
 import {
   Container,
   Heading,
@@ -11,42 +11,38 @@ import {
   Text,
   CardFooter,
   FormControl,
-  FormLabel,
   Input,
-  FormHelperText,
   FormErrorMessage,
   Stack,
   InputGroup,
   InputRightElement,
   Button,
+  Alert,
+  AlertIcon,
+  AlertDescription,
 } from "@chakra-ui/react";
 
 export function LoginPage() {
+  const [isPasswordShown, setIsPasswordShown] = React.useState(false);
   const authContext = useAuthContext();
-
-  const [loginData, setLoginData] = React.useState({
-    userName: "",
-    password: "",
-  });
-  const [formErrors, setFormErrors] = React.useState({
-    userName: "k",
-    password: "",
-  });
+  const loginErrors = authContext.loginErrors;
 
   if (authContext.token) {
     return <Navigate to={"/"} />;
   }
 
+  console.log({ loginErrors });
+
   return (
     <Container maxW="2xl" centerContent>
-      <Heading>Video Share</Heading>
+      <Heading mb={10}>Video Share</Heading>
       <Box>
-        <Card align="center">
+        <Card align="center" width="sm">
           <CardHeader>
             <Heading size="md">Sign in</Heading>
           </CardHeader>
           <CardBody>
-            <Text align="center">
+            <Text align="center" mb={3}>
               Don't have an account? Click here to sign up
             </Text>
             <form
@@ -61,30 +57,66 @@ export function LoginPage() {
               }}
             >
               <Stack spacing={3}>
-                <FormControl isInvalid={true}>
+                <FormControl
+                  isInvalid={
+                    loginErrors.username?.length > 0 || !!loginErrors.detail
+                  }
+                >
                   <Input
                     type="text"
                     placeholder="Enter username"
                     name="username"
-                    isInvalid={true}
+                    isInvalid={
+                      loginErrors.username?.length > 0 || !!loginErrors.detail
+                    }
+                    onChange={() => authContext.setLoginErrors({})}
                   />
-                  {true && <FormErrorMessage>Errror</FormErrorMessage>}
+                  {loginErrors.username?.length > 0 && (
+                    <FormErrorMessage>
+                      {loginErrors.username.join(", ")}
+                    </FormErrorMessage>
+                  )}
                 </FormControl>
-                <FormControl isInvalid={true}>
+                <FormControl
+                  isInvalid={
+                    loginErrors.password?.length > 0 || !!loginErrors.detail
+                  }
+                >
                   <InputGroup>
                     <Input
-                      type="password"
+                      type={isPasswordShown ? "text" : "password"}
                       placeholder="Enter password"
                       name="password"
-                      isInvalid={true}
+                      isInvalid={
+                        loginErrors.password?.length > 0 || !!loginErrors.detail
+                      }
+                      onChange={() => authContext.setLoginErrors({})}
                     />
-                    <InputRightElement>
-                      <Button>Show</Button>
+                    <InputRightElement width={"4rem"}>
+                      <Button
+                        onClick={() =>
+                          setIsPasswordShown((prevState) => !prevState)
+                        }
+                      >
+                        {isPasswordShown ? "Hide" : "Show"}
+                      </Button>
                     </InputRightElement>
                   </InputGroup>
-                  {true && <FormErrorMessage>pass incorrect</FormErrorMessage>}
+                  {loginErrors.password?.length > 0 && (
+                    <FormErrorMessage>
+                      {loginErrors.password.join(", ")}
+                    </FormErrorMessage>
+                  )}
                 </FormControl>
-                <input type="submit" value="Log in" />
+                <Button isLoading={authContext.loading} type="submit">
+                  Log in
+                </Button>
+                {loginErrors.detail && (
+                  <Alert status="error" padding={"0 20px"}>
+                    <AlertIcon />
+                    <AlertDescription>{loginErrors.detail}</AlertDescription>
+                  </Alert>
+                )}
               </Stack>
             </form>
           </CardBody>
