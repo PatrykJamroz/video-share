@@ -8,12 +8,14 @@ from django.contrib.auth.models import User
 from rest_framework.response import Response
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
+from rest_framework.views import APIView
+
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 from rest_framework_simplejwt.views import TokenObtainPairView
 from django.shortcuts import render
 
 from .models import PostDraft, Profile
-from .serializers import PostDraftSerializer
+from .serializers import PostDraftSerializer, ProfileSerializer
 
 
 # Create your views here.
@@ -52,4 +54,27 @@ class PostDraftList(generics.ListAPIView, LoginRequiredMixin):
         following = user.profile.following.all()
         queryset = PostDraft.objects.filter(user__in=following)
         return queryset
+    
 
+class Profile(generics.RetrieveAPIView):
+    permission_classes = [IsAuthenticated]
+    queryset = Profile.objects.all()
+    serializer_class = ProfileSerializer
+
+    def get_object(self):
+        return self.request.user.profile
+
+    def retrieve(self, request, *args, **kwargs):
+        profile = self.get_object()
+
+        # Retrieve the count of PostDraft objects associated with the profile
+        post_count = PostDraft.objects.filter(user=profile.user).count()
+
+        serializer = self.get_serializer(profile)
+        response_data = serializer.data
+
+        # Add post_count and followers_count to the response
+        response_data['post_count'] = post_count
+        response_data['followers'] = profile.user.followers.values_list('user_id', flat=True)
+
+        return Response(response_data)

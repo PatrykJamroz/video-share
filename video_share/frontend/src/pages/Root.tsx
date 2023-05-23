@@ -16,10 +16,10 @@ export function Root(): JSX.Element {
 
   return (
     <Flex w="100%">
-      <Box w="30%" position="sticky" top="0">
+      <Box w="30%" position="sticky" top="0" border={"red dashed 1px"}>
         <AppMenu />
       </Box>
-      <Box w="70%" ml="1%">
+      <Box w="70%" ml="1%" border={"green dashed 1px"}>
         <ProtectedRoute>
           <Outlet />
         </ProtectedRoute>
