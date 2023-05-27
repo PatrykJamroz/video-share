@@ -1,1 +1,3 @@
-import { axiosInstance } from "./axiosInstance";
+export * from "./authedInstance";
+export * from "./appApi";
+export * from "./videoApi";

@@ -1,5 +1,6 @@
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin
+from django.db.models import Q
 from django.http import HttpResponse
 from rest_framework import generics
 from django.contrib.auth.models import User
@@ -14,8 +15,8 @@ from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 from rest_framework_simplejwt.views import TokenObtainPairView
 from django.shortcuts import render
 
-from .models import PostDraft, Profile
-from .serializers import PostDraftSerializer, ProfileSerializer
+from .models import PostDraft, Profile, Post
+from .serializers import PostDraftSerializer, ProfileSerializer, PostSerializer
 
 
 # Create your views here.
@@ -52,13 +53,23 @@ class PostDraftList(generics.ListAPIView, LoginRequiredMixin):
     def get_queryset(self):
         user = User.objects.first()
         following = user.profile.following.all()
-        queryset = PostDraft.objects.filter(user__in=following)
+        queryset = PostDraft.objects.filter(Q(user__in=following) | Q(user=user))
         return queryset
     
 
+class PostList(generics.ListAPIView, LoginRequiredMixin):
+    permission_classes = [IsAuthenticated]
+    serializer_class = PostSerializer
+
+    def get_queryset(self):
+        user = User.objects.first()
+        following = user.profile.following.all()
+        queryset = Post.objects.filter(Q(user__in=following) | Q(user=user))
+        return queryset
+
+
 class Profile(generics.RetrieveAPIView):
     permission_classes = [IsAuthenticated]
-    queryset = Profile.objects.all()
     serializer_class = ProfileSerializer
 
     def get_object(self):
@@ -68,7 +79,7 @@ class Profile(generics.RetrieveAPIView):
         profile = self.get_object()
 
         # Retrieve the count of PostDraft objects associated with the profile
-        post_count = PostDraft.objects.filter(user=profile.user).count()
+        post_count = Post.objects.filter(user=profile.user).count()
 
         serializer = self.get_serializer(profile)
         response_data = serializer.data

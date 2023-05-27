@@ -1,5 +1,5 @@
 from django.urls import path
-from .views import main, MyTokenObtainPairView, getPostDrafts, PostDraftList, Profile
+from .views import main, MyTokenObtainPairView, getPostDrafts, PostDraftList, Profile, PostList
 
 from rest_framework_simplejwt.views import (
     TokenRefreshView,
@@ -7,7 +7,7 @@ from rest_framework_simplejwt.views import (
 
 urlpatterns = [
     # path('', main),
-    path('post-drafts/', getPostDrafts),
+    path('posts/', PostList.as_view()),
     path('post-draft-list/', PostDraftList.as_view()),
     path('profile/', Profile.as_view()),
     path('token/', MyTokenObtainPairView.as_view(), name='token_obtain_pair'),
