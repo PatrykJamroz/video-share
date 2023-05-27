@@ -31,8 +31,6 @@ export function LoginPage() {
     return <Navigate to={"/"} />;
   }
 
-  console.log({ loginErrors });
-
   return (
     <Container maxW="2xl" centerContent>
       <Heading mb={10}>Video Share</Heading>
@@ -48,7 +46,6 @@ export function LoginPage() {
             <form
               onSubmit={(e) => {
                 e.preventDefault();
-                console.log(e);
                 //TODO fix types
                 authContext.loginUser(
                   e.target.username.value,

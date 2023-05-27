@@ -1,5 +1,5 @@
-from rest_framework.serializers import ModelSerializer
-from .models import PostDraft, Profile
+from rest_framework.serializers import ModelSerializer, ReadOnlyField
+from .models import PostDraft, Profile, Post
 
 
 class PostDraftSerializer(ModelSerializer):
@@ -7,7 +7,18 @@ class PostDraftSerializer(ModelSerializer):
         model = PostDraft
         fields = '__all__'
 
+class PostSerializer(ModelSerializer):
+    username = ReadOnlyField(source='user.username')
+    user_bio = ReadOnlyField(source='user.profile.bio')
+
+
+    class Meta:
+        model = Post
+        fields = '__all__'
+
 class ProfileSerializer(ModelSerializer):
+    username = ReadOnlyField(source='user.username')
+
     class Meta:
         model = Profile
         fields = '__all__'

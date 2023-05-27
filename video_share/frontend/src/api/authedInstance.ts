@@ -1,12 +1,12 @@
 import axios from "axios";
 
-export const axiosInstance = axios.create({
+export const authedInstance = axios.create({
   // Set the baseURL for your API requests
-  baseURL: "http://127.0.0.1:8000/api",
+  baseURL: "/api/",
 });
 
 // Add a request interceptor to add the Authorization header
-axiosInstance.interceptors.request.use(
+authedInstance.interceptors.request.use(
   (config) => {
     const token = JSON.parse(localStorage.getItem("token"));
     if (token) {
